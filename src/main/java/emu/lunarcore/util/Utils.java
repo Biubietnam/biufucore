@@ -1,11 +1,17 @@
 package emu.lunarcore.util;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Base64;
 import java.util.List;
+import java.util.Scanner;
 import java.util.concurrent.ThreadLocalRandom;
 
 import it.unimi.dsi.fastutil.ints.IntList;
@@ -27,7 +33,24 @@ public class Utils {
         }
         return new String(hexChars);
     }
-
+    public static String readFile(String path) {
+        try (InputStream inputStream = Utils.class.getClassLoader().getResourceAsStream(path)) {
+            if (inputStream == null) {
+                // If the file is not found, return a default fallback message
+                System.out.println("File not found: " + path);
+                return "<html><body><h1>404 - Not Found</h1></body></html>";
+            }
+    
+            // Log that the file has been found and is being loaded
+            System.out.println("Loading file: " + path);
+    
+            // Convert the input stream to a string
+            return new Scanner(inputStream, StandardCharsets.UTF_8).useDelimiter("\\A").next();
+        } catch (IOException e) {
+            e.printStackTrace(); // Log any errors that occur during file reading
+            return "<html><body><h1>404 - Not Found</h1></body></html>"; // Fallback HTML content
+        }
+    }
     public static byte[] hexToBytes(String s) {
         int len = s.length();
         byte[] data = new byte[len / 2];

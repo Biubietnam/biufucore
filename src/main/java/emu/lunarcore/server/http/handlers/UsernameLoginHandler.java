@@ -50,7 +50,7 @@ public class UsernameLoginHandler implements Handler {
             }
         } else {
             // Device ID
-            DeviceHandler.handleDeviceLimit(account, ctx, res);
+            
 
             res.message = "OK";
             res.data = new VerifyData(account.getUid(), account.getEmail(), account.generateDispatchToken());

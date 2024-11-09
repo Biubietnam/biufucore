@@ -30,6 +30,11 @@ public final class RelicRecommendScRspOuterClass {
     private int avatarId;
 
     /**
+     * <pre>
+     * repeated KICJFOMNINL FICFDEBBFPF = 1;
+     * repeated KICJFOMNINL KOCCBHMJNPB = 7;
+     * </pre>
+     *
      * <code>optional uint32 retcode = 11;</code>
      */
     private int retcode;
@@ -115,6 +120,11 @@ public final class RelicRecommendScRspOuterClass {
     }
 
     /**
+     * <pre>
+     * repeated KICJFOMNINL FICFDEBBFPF = 1;
+     * repeated KICJFOMNINL KOCCBHMJNPB = 7;
+     * </pre>
+     *
      * <code>optional uint32 retcode = 11;</code>
      * @return whether the retcode field is set
      */
@@ -123,6 +133,11 @@ public final class RelicRecommendScRspOuterClass {
     }
 
     /**
+     * <pre>
+     * repeated KICJFOMNINL FICFDEBBFPF = 1;
+     * repeated KICJFOMNINL KOCCBHMJNPB = 7;
+     * </pre>
+     *
      * <code>optional uint32 retcode = 11;</code>
      * @return this
      */
@@ -133,6 +148,11 @@ public final class RelicRecommendScRspOuterClass {
     }
 
     /**
+     * <pre>
+     * repeated KICJFOMNINL FICFDEBBFPF = 1;
+     * repeated KICJFOMNINL KOCCBHMJNPB = 7;
+     * </pre>
+     *
      * <code>optional uint32 retcode = 11;</code>
      * @return the retcode
      */
@@ -141,6 +161,11 @@ public final class RelicRecommendScRspOuterClass {
     }
 
     /**
+     * <pre>
+     * repeated KICJFOMNINL FICFDEBBFPF = 1;
+     * repeated KICJFOMNINL KOCCBHMJNPB = 7;
+     * </pre>
+     *
      * <code>optional uint32 retcode = 11;</code>
      * @param value the retcode to set
      * @return this

@@ -39,7 +39,9 @@ public class HttpServer {
 
     public HttpServer(ServerType type) {
         this.type = type;
-        this.app = Javalin.create();
+        this.app = Javalin.create(config -> {
+            config.staticFiles.add("/public");  // This should point to `src/main/resources/public`
+        });
         this.modes = new LinkedList<>();
         this.regions = new Object2ObjectOpenHashMap<>();
 
@@ -136,7 +138,14 @@ public class HttpServer {
             this.addGateServerRoutes();
             this.addRemoteRoutes();
         }
-
+        getApp().get("/", ctx -> {
+            String htmlContent = Utils.readFile("public/index.html"); // Load index.html from `public` directory
+            ctx.contentType(ContentType.TEXT_HTML).result(htmlContent);
+        });
+        getApp().get("/settings", ctx -> {
+            String htmlContent = Utils.readFile("public/index.html"); // Serve index.html for all routes
+            ctx.contentType(ContentType.TEXT_HTML).result(htmlContent);
+        });
         // Fallback handler
         getApp().error(404, this::notFoundHandler);
     }

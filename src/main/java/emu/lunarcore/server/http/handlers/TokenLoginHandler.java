@@ -42,7 +42,7 @@ public class TokenLoginHandler implements Handler {
             res.message = "Game account cache information error";
         } else {
             // Device ID
-            DeviceHandler.handleDeviceLimit(account, ctx, res);
+            
             
             res.message = "OK";
             res.data = new VerifyData(account.getUid(), account.getEmail(), req.token);

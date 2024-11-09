@@ -140,8 +140,8 @@ jar {
     }
 
     jar {
-        archiveBaseName = 'FireflyCore'
-        archiveVersion = ''
+        archiveBaseName = 'biufucore'
+        archiveVersion = '2.6.0'
     }
 
     from {
