@@ -26,10 +26,28 @@ public class GameSession {
     private final Int2LongMap packetCooldown;
     private InetSocketAddress address;
 
+
+
+
+
     private Account account;
     private Player player;
 
     public LoginManager loginManager;
+
+    private static int activeClientCount = 0;
+
+    public static synchronized int getActiveClientCount() {
+        return activeClientCount;
+    }
+
+    public synchronized void incrementClientCount() {
+        activeClientCount++;
+    }
+
+    public synchronized void decrementClientCount() {
+        activeClientCount--;
+    }
 
     // Network
     @Getter(AccessLevel.PRIVATE) private Ukcp ukcp;

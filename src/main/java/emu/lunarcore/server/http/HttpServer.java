@@ -21,6 +21,7 @@ import emu.lunarcore.server.http.handlers.*;
 import emu.lunarcore.server.http.objects.HttpJsonResponse;
 import emu.lunarcore.server.http.remote.*;
 import emu.lunarcore.util.Utils;
+import emu.lunarcore.server.game.GameSession;
 import io.javalin.Javalin;
 import io.javalin.http.ContentType;
 import io.javalin.http.Context;
@@ -204,6 +205,54 @@ public class HttpServer {
         }
     };
 
+    private final Handler checktokenvalid = ctx -> {
+        // Retrieve token from the JSON body
+        String token = ctx.bodyAsClass(Map.class).get("token").toString();
+
+        if (token == null) {
+            ctx.status(400).result("Missing token");
+            LunarCore.getLogger().info("Client missing token"); 
+            return; 
+        }   
+
+        try {
+            // Decode the Base64 token to get username:password
+            String decodedToken = new String(Base64.getDecoder().decode(token));
+            String[] credentials = decodedToken.split(":");
+
+            if (credentials.length != 2) {
+                ctx.status(400).result("Invalid token format");
+                return;
+            }
+
+            String username = credentials[0];
+            String password = credentials[1];
+
+            // Log the token check attempt
+            LunarCore.getLogger().info("Received token check - Username: {}", username);
+
+            // Query the `accounts` collection to find a match
+            MongoCollection<Document> collection = database.getCollection("accounts");
+            Document account = collection.find(and(eq("username", username), eq("password", password))).first();
+
+            if (account != null) {
+                LunarCore.getLogger().info("Token valid for user: {}", username);
+                // Return valid response using TokenCheckResponse
+                TokenCheckResponse response = new TokenCheckResponse("Valid", token);
+                ctx.status(200).json(response);
+            } else {
+                LunarCore.getLogger().info("Invalid token for user: {}", username);
+                // Return invalid response (401 Unauthorized)
+                ctx.status(401).json(new LoginResponse("Invalid", null));
+            }
+
+        } catch (Exception e) {
+            LunarCore.getLogger().error("Error decoding token or checking credentials", e);
+            ctx.status(500).result("Internal server error");
+        }
+    };
+
+
     private HttpConnectionFactory getHttpFactory() {
         HttpConfiguration httpsConfig = new HttpConfiguration();
         SecureRequestCustomizer src = new SecureRequestCustomizer();
@@ -274,53 +323,10 @@ public class HttpServer {
         LunarCore.getLogger().info("Http Server started on " + getServerConfig().getBindPort());
     }
 
-    private final Handler checktokenvalid = ctx -> {
-        // Retrieve token from the JSON body
-        String token = ctx.bodyAsClass(Map.class).get("token").toString();
 
-        if (token == null) {
-            ctx.status(400).result("Missing token");
-            LunarCore.getLogger().info("Client missing token");
-            return;
-        }
-
-        try {
-            // Decode the Base64 token to get username:password
-            String decodedToken = new String(Base64.getDecoder().decode(token));
-            String[] credentials = decodedToken.split(":");
-
-            if (credentials.length != 2) {
-                ctx.status(400).result("Invalid token format");
-                return;
-            }
-
-            String username = credentials[0];
-            String password = credentials[1];
-
-            // Log the token check attempt
-            LunarCore.getLogger().info("Received token check - Username: {}", username);
-
-            // Query the `accounts` collection to find a match
-            MongoCollection<Document> collection = database.getCollection("accounts");
-            Document account = collection.find(and(eq("username", username), eq("password", password))).first();
-
-            if (account != null) {
-                LunarCore.getLogger().info("Token valid for user: {}", username);
-                // Return valid response using TokenCheckResponse
-                TokenCheckResponse response = new TokenCheckResponse("Valid", token);
-                ctx.status(200).json(response);
-            } else {
-                LunarCore.getLogger().info("Invalid token for user: {}", username);
-                // Return invalid response (401 Unauthorized)
-                ctx.status(401).json(new LoginResponse("Invalid", null));
-            }
-
-        } catch (Exception e) {
-            LunarCore.getLogger().error("Error decoding token or checking credentials", e);
-            ctx.status(500).result("Internal server error");
-        }
+    private final Handler getplayer = ctx -> {
+        ctx.json(Map.of("playerCount", GameSession.getActiveClientCount())); // Sends player count as JSON response
     };
-
     private void addRoutes() {
         // Add routes based on what type of server this is
         if (this.getType().runDispatch()) {
@@ -341,6 +347,7 @@ public class HttpServer {
         });
         app.post("/request/login", loginHandler);
         app.post("/request/tokencheck", checktokenvalid);
+        app.get("/request/getplayer", getplayer);
         getApp().error(404, this::notFoundHandler);
     }
 
