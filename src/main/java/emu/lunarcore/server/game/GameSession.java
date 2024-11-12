@@ -97,13 +97,14 @@ public class GameSession {
         if (ConfigManager.getConfig().getLogOptions().connections) {
             LunarCore.getLogger().info("Client connected from " + address.getHostString());
         }
+        incrementClientCount();
     }
 
     public void onDisconnect() {
         if (ConfigManager.getConfig().getLogOptions().connections) {
             LunarCore.getLogger().info("Client disconnected from " + address.getHostString());
         }
-
+        decrementClientCount();
         this.state = SessionState.INACTIVE;
 
         if (player != null) {
@@ -116,6 +117,7 @@ public class GameSession {
             // Deregister player from server
             this.getServer().deregisterPlayer(player);
         }
+
     }
 
     public void onMessage(ByteBuf packet) {

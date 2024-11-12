@@ -6,7 +6,7 @@ import java.time.ZoneOffset;
 import emu.lunarcore.util.Position;
 
 public class GameConstants {
-    public static String VERSION = "2.6.5";
+    public static String VERSION = "2.6.0";
     public static String NAME = "biufucore";
     
     public static final ZoneOffset CURRENT_ZONEOFFSET = ZoneOffset.systemDefault().getRules().getOffset(Instant.now());

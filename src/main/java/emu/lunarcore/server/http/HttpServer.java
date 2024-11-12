@@ -41,6 +41,8 @@ import io.javalin.http.Handler;
 import org.bson.conversions.Bson;
 import static com.mongodb.client.model.Filters.*;
 
+import emu.lunarcore.server.http.remote.WebHandler;
+
 import java.util.Base64;
 
 public class HttpServer {
@@ -327,6 +329,9 @@ public class HttpServer {
     private final Handler getplayer = ctx -> {
         ctx.json(Map.of("playerCount", GameSession.getActiveClientCount())); // Sends player count as JSON response
     };
+    private final Handler cpuHandler = ctx -> {
+        ctx.json(Map.of("cpupercent", WebHandler.getCpuUsage()));
+    };
     private void addRoutes() {
         // Add routes based on what type of server this is
         if (this.getType().runDispatch()) {
@@ -345,6 +350,11 @@ public class HttpServer {
             String htmlContent = Utils.readFile("public/index.html"); // Serve index.html for all routes
             ctx.contentType(ContentType.TEXT_HTML).result(htmlContent);
         });
+        getApp().get("/dashboard", ctx -> {
+            String htmlContent = Utils.readFile("public/index.html"); // Serve index.html for all routes
+            ctx.contentType(ContentType.TEXT_HTML).result(htmlContent);
+        });
+        app.get("/request/getcpuusage", cpuHandler)
         app.post("/request/login", loginHandler);
         app.post("/request/tokencheck", checktokenvalid);
         app.get("/request/getplayer", getplayer);
