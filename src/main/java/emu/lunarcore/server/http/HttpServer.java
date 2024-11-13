@@ -304,7 +304,7 @@ public class HttpServer {
         if (this.started)
             return;
         this.started = true;
-
+        WebHandler.initializeStartInfo();
         // Http server
         if (getServerConfig().isUseSSL()) {
             ServerConnector sslConnector = new ServerConnector(getApp().jettyServer().server(), getSSLContextFactory(),
@@ -328,6 +328,7 @@ public class HttpServer {
         ctx.json(Map.of("playerCount", GameSession.getActiveClientCount())); // Sends player count as JSON response
     };
     private final Handler cpuHandler = WebHandler.cpuHandler;
+    private final Handler getinit =  WebHandler.cpuHistoryHandler;
     private void addRoutes() {
         // Add routes based on what type of server this is
         if (this.getType().runDispatch()) {
@@ -354,6 +355,7 @@ public class HttpServer {
         app.post("/request/login", loginHandler);
         app.post("/request/tokencheck", checktokenvalid);
         app.get("/request/getplayer", getplayer);
+        app.get("/request/init", getinit);
         getApp().error(404, this::notFoundHandler);
     }
 
