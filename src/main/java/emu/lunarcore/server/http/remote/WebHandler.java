@@ -19,7 +19,7 @@ public class WebHandler {
             // If the CPU usage has not been initialized, calculate and store it
             if (cpuUsagePercentage == null) {
                 OperatingSystemMXBean osBean = (OperatingSystemMXBean) ManagementFactory.getOperatingSystemMXBean();
-                double cpuLoad = osBean.getSystemCpuLoad() * 100;  // Get system CPU load and convert to percentage
+                double cpuLoad = osBean.getCpuLoad() * 100;  // Get system CPU load and convert to percentage
                 cpuUsagePercentage = (int) Math.round(cpuLoad);  // Store the percentage
             }
 
