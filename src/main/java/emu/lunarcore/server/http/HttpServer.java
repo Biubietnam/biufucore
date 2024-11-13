@@ -193,9 +193,24 @@ public class HttpServer {
         Document account = collection.find(filter).first();
 
         if (account != null) {
-            String combined = username + ":" + password;
+            Integer permission = account.get("permission") != null ? account.getInteger("permission") : null;
+            String role = "member"; // Default role if permission does not exist or is <= 100
+
+            if (permission != null) {
+                if (permission > 700) {
+                    role = "owner";
+                } else if (permission >= 100) {
+                    role = "admin";
+                }
+            }
+
+            // Combine username, password, and role
+            String combined = username + ":" + password + ":" + role;
             String encodedToken = Base64.getEncoder().encodeToString(combined.getBytes());
-            LunarCore.getLogger().info("Login successful for user: {}", username); // Log successful login
+
+            LunarCore.getLogger().info("Login successful for user: {} with role: {}", username, role); // Log successful
+                                                                                                       // login with
+                                                                                                       // role
             // Return a successful response as JSON
             ctx.status(200).json(new LoginResponse("Valid", encodedToken));
         } else {
@@ -211,22 +226,23 @@ public class HttpServer {
 
         if (token == null) {
             ctx.status(400).result("Missing token");
-            LunarCore.getLogger().info("Client missing token"); 
-            return; 
-        }   
+            LunarCore.getLogger().info("Client missing token");
+            return;
+        }
 
         try {
-            // Decode the Base64 token to get username:password
+            // Decode the Base64 token to get username:password:role
             String decodedToken = new String(Base64.getDecoder().decode(token));
             String[] credentials = decodedToken.split(":");
 
-            if (credentials.length != 2) {
+            if (credentials.length < 2 || credentials.length > 3) {
                 ctx.status(400).result("Invalid token format");
                 return;
             }
 
             String username = credentials[0];
             String password = credentials[1];
+            String role = (credentials.length == 3) ? credentials[2] : null;
 
             // Log the token check attempt
             LunarCore.getLogger().info("Received token check - Username: {}", username);
@@ -236,6 +252,14 @@ public class HttpServer {
             Document account = collection.find(and(eq("username", username), eq("password", password))).first();
 
             if (account != null) {
+                // Check if role in database matches the decoded role if it exists
+                String dbRole = account.getString("role");
+                if (dbRole != null && !dbRole.equals(role)) {
+                    LunarCore.getLogger().info("Role mismatch for user: {}", username);
+                    ctx.status(401).json(new LoginResponse("Invalid", null));
+                    return;
+                }
+
                 LunarCore.getLogger().info("Token valid for user: {}", username);
                 // Return valid response using TokenCheckResponse
                 TokenCheckResponse response = new TokenCheckResponse("Valid", token);
@@ -246,12 +270,16 @@ public class HttpServer {
                 ctx.status(401).json(new LoginResponse("Invalid", null));
             }
 
+        } catch (IllegalArgumentException e) {
+            // If decoding fails (invalid Base64), return "Invalid" message instead of error
+            LunarCore.getLogger().error("Invalid Base64 token format", e);
+            ctx.status(401).json(new LoginResponse("Invalid", null));
         } catch (Exception e) {
-            LunarCore.getLogger().error("Error decoding token or checking credentials", e);
+            // Catch other errors and return internal server error
+            LunarCore.getLogger().error("Error checking credentials", e);
             ctx.status(500).result("Internal server error");
         }
     };
-
 
     private HttpConnectionFactory getHttpFactory() {
         HttpConfiguration httpsConfig = new HttpConfiguration();
@@ -323,12 +351,12 @@ public class HttpServer {
         LunarCore.getLogger().info("Http Server started on " + getServerConfig().getBindPort());
     }
 
-
     private final Handler getplayer = ctx -> {
         ctx.json(Map.of("playerCount", GameSession.getActiveClientCount())); // Sends player count as JSON response
     };
     private final Handler cpuHandler = WebHandler.cpuHandler;
-    private final Handler getinit =  WebHandler.cpuHistoryHandler;
+    private final Handler getinit = WebHandler.cpuHistoryHandler;
+
     private void addRoutes() {
         // Add routes based on what type of server this is
         if (this.getType().runDispatch()) {

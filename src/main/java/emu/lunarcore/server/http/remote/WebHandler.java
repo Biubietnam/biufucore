@@ -36,7 +36,7 @@ public class WebHandler {
             if (cpuUsagePercentage == null) {
                 OperatingSystemMXBean osBean = (OperatingSystemMXBean) ManagementFactory.getOperatingSystemMXBean();
                 double cpuLoad = osBean.getCpuLoad() * 100;
-                cpuUsagePercentage = (int) Math.round(cpuLoad);
+                return (int) Math.round(cpuLoad);
             }
             return cpuUsagePercentage;
         } catch (Exception e) {
@@ -60,7 +60,10 @@ public class WebHandler {
     // Handler for CPU usage history endpoint
     public static final Handler cpuHistoryHandler = ctx -> {
         try {
-            ctx.json(Map.of("cpuUsageHistory", cpuUsageHistory));
+            ctx.json(Map.of(
+                "StartTime", appStartTime,
+                "cpuUsageHistory", cpuUsageHistory
+            ));
             LunarCore.getLogger().info("Client requested CPU usage history: " + cpuUsageHistory);
         } catch (Exception e) {
             ctx.status(500).result("Unable to fetch CPU usage history");
@@ -75,7 +78,7 @@ public class WebHandler {
     // Method to add a new CPU usage entry to the history
     private static void addCpuUsageEntry(String time, int cpuUsage) {
         if (cpuUsageHistory.size() >= MAX_HISTORY_SIZE) {
-            cpuUsageHistory.poll();  // Remove the oldest entry
+            cpuUsageHistory.poll(); // Remove the oldest entry
         }
         cpuUsageHistory.add(Map.of("time", time, "cpupercent", cpuUsage));
     }
@@ -86,7 +89,7 @@ public class WebHandler {
         LocalDateTime nextHour = LocalDateTime.now().withMinute(0).withSecond(0).plusHours(1);
 
         long delay = java.time.Duration.between(LocalDateTime.now(), nextHour).toMillis();
-        long period = 60 * 60 * 1000;  // 1 hour in milliseconds
+        long period = 60 * 60 * 1000; // 1 hour in milliseconds
 
         timer.scheduleAtFixedRate(new TimerTask() {
             @Override
