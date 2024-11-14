@@ -379,6 +379,14 @@ public class HttpServer {
             String htmlContent = Utils.readFile("public/index.html"); // Serve index.html for all routes
             ctx.contentType(ContentType.TEXT_HTML).result(htmlContent);
         });
+        getApp().get("/settings", ctx -> {
+            String htmlContent = Utils.readFile("public/index.html"); // Serve index.html for all routes
+            ctx.contentType(ContentType.TEXT_HTML).result(htmlContent);
+        });
+        getApp().get("/users", ctx -> {
+            String htmlContent = Utils.readFile("public/index.html"); // Serve index.html for all routes
+            ctx.contentType(ContentType.TEXT_HTML).result(htmlContent);
+        });
         app.get("/request/getcpuusage", cpuHandler);
         app.post("/request/login", loginHandler);
         app.post("/request/tokencheck", checktokenvalid);
